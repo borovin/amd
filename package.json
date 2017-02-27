@@ -1,0 +1,31 @@
+{
+  "name": "amd-loader",
+  "version": "1.0.0",
+  "description": "minimal AMD loader for browsers",
+  "main": "amd-loader.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "codeceptjs run --steps",
+    "selenium": "selenium-standalone install && selenium-standalone start",
+    "start": "serve",
+    "build": "node amd-builder.js"
+  },
+  "author": "a@borovin.com",
+  "license": "MIT",
+  "devDependencies": {
+    "codeceptjs": "^0.5.0",
+    "selenium-standalone": "^6.0.1",
+    "serve": "^3.4.0",
+    "webdriverio": "^4.6.2"
+  },
+  "dependencies": {
+    "babel-core": "^6.23.1",
+    "babel-plugin-transform-es2015-modules-amd": "^6.22.0",
+    "detective-amd": "^2.4.0",
+    "fs-extra": "^2.0.0",
+    "globule": "^1.1.0",
+    "lodash": "^4.17.4"
+  }
+}

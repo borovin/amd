@@ -1,0 +1,15 @@
+{
+  "tests": "./tests/*.js",
+  "timeout": 10000,
+  "output": "./output",
+  "helpers": {
+    "WebDriverIO": {
+      "url": "http://localhost:3000",
+      "browser": "chrome"
+    }
+  },
+  "include": {},
+  "bootstrap": false,
+  "mocha": {},
+  "name": "amd-loader"
+}

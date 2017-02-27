@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="/amd-loader.js"></script>
+  <script src="/tests/build/amd-config.js"></script>
+</head>
+<body>
+  <script>
+      amd.load('tests/build/a.js').then(a => {
+          document.body.innerHTML = a
+      });
+  </script>
+</body>
+</html>
