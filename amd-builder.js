@@ -7,7 +7,7 @@ const path = require('path');
 
 const srcDir = 'tests/src';
 const outDir = 'tests/build';
-const amdConfigFile = `${outDir}/amd-config.js`;
+const amdConfigFile = `${outDir}/amd-tree.js`;
 const tree = {};
 
 const amdRegEx = /(?:^\s*|[}{\(\);,\n\?\&]\s*)define\s*\(\s*("[^"]+"\s*,\s*|'[^']+'\s*,\s*)?\s*(\[(\s*(("[^"]+"|'[^']+')\s*,|\/\/.*\n|\/\*(.|\s)*?\*\/))*(\s*("[^"]+"|'[^']+')\s*,?\s*)?(\s*(\/\/.*\n|\/\*(.|\s)*?\*\/)\s*)*\]|function\s*|{|[_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*\))/;
