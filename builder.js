@@ -4,22 +4,28 @@ const globule = require('globule');
 const cwd = process.cwd();
 const detective = require('detective-amd');
 const path = require('path');
+const _ = require('lodash');
+const config = _.merge({
+    srcDir: 'src',
+    srcFiles: '**/*.js',
+    outDir: 'build',
+    staticDir: '.',
+    babel: {}
+}, require(`${cwd}/amd.config.js`));
 
-const srcDir = 'tests/src';
-const outDir = 'tests/build';
-const amdConfigFile = `${outDir}/amd-tree.js`;
+const amdConfigFile = `${config.outDir}/amd.tree.js`;
 const tree = {};
 
 const amdRegEx = /(?:^\s*|[}{\(\);,\n\?\&]\s*)define\s*\(\s*("[^"]+"\s*,\s*|'[^']+'\s*,\s*)?\s*(\[(\s*(("[^"]+"|'[^']+')\s*,|\/\/.*\n|\/\*(.|\s)*?\*\/))*(\s*("[^"]+"|'[^']+')\s*,?\s*)?(\s*(\/\/.*\n|\/\*(.|\s)*?\*\/)\s*)*\]|function\s*|{|[_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*\))/;
 
-const srcFiles = globule.find(`${srcDir}/**/*.js`);
+const srcFiles = globule.find(`${config.srcDir}/${config.srcFiles}`);
 
 srcFiles && srcFiles.forEach(srcFileName => {
-    const outFileName = srcFileName.replace(srcDir, outDir);
+    const outFileName = srcFileName.replace(config.srcDir, config.outDir);
     transformFileSync(srcFileName, outFileName);
 });
 
-const outFiles = globule.find(`${outDir}/**/*.js`);
+const outFiles = globule.find(`${config.outDir}/**/*.js`);
 
 outFiles && outFiles.forEach(outFileName => {
     trace(outFileName);
@@ -34,15 +40,13 @@ console.log(`-> ${amdConfigFile}`);
 
 function transformFileSync(srcFileName, outFileName) {
     const srcFileContent = fs.readFileSync(srcFileName, 'utf8');
-    const babelPlugins = [];
+    const babelConfig = _.merge({plugins: []}, config.babel);
 
     if (!amdRegEx.test(srcFileContent)) {
-        babelPlugins.push('transform-es2015-modules-amd');
+        babelConfig.plugins.push('transform-es2015-modules-amd');
     }
 
-    const result = babel.transform(srcFileContent, {
-        "plugins": babelPlugins
-    });
+    const result = babel.transform(srcFileContent, babelConfig);
 
     fs.outputFileSync(outFileName, result.code, 'utf8');
 
@@ -52,33 +56,40 @@ function transformFileSync(srcFileName, outFileName) {
 function trace(fileName) {
     const fileContent = fs.readFileSync(fileName, 'utf8');
     const fileDeps = detective(fileContent);
+    let fileUrl = fileName;
 
-    if (tree[fileName]) {
+    if (fileUrl.indexOf('node_modules/') >= 0) {
+        fileUrl = fileName.replace('node_modules', `${config.outDir}/browser_modules`);
+    }
+
+    fileUrl = _.trimStart(fileUrl, `${config.staticDir}/`);
+
+    if (tree[fileUrl]) {
         return;
     }
 
-    tree[fileName] = {};
+    tree[fileUrl] = {};
 
     fileDeps.forEach(depId => {
         if (depId === 'module' || depId === 'exports') {
             return;
         }
 
-        let moduleId = depId;
+        let depPath = depId;
+        let depUrl;
 
         if (depId.indexOf('.') === 0) {
-            moduleId = path.resolve(path.dirname(fileName), depId);
+            depPath = path.resolve(path.dirname(fileName), depId);
         }
 
-        const depPath = require.resolve(moduleId).replace(`${cwd}/`, '');
+        depUrl = depPath = require.resolve(depPath).replace(`${cwd}/`, '');
 
         if (depPath.indexOf('node_modules/') >= 0) {
-            const browserModulePath = depPath.replace('node_modules', `${outDir}/browser_modules`);
-            transformFileSync(depPath, browserModulePath);
-            tree[fileName][depId] = browserModulePath;
-        } else {
-            tree[fileName][depId] = depPath;
+            depUrl = depPath.replace('node_modules', `${config.outDir}/browser_modules`);
+            transformFileSync(depPath, depUrl);
         }
+
+        tree[fileUrl][depId] = _.trimStart(depUrl, `${config.staticDir}/`);
 
         trace(depPath);
     });

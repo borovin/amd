@@ -10,11 +10,12 @@
     "test": "codeceptjs run --steps",
     "selenium": "selenium-standalone install && selenium-standalone start",
     "start": "serve",
-    "build": "node amd-builder.js"
+    "build": "node builder.js"
   },
   "author": "a@borovin.com",
   "license": "MIT",
   "devDependencies": {
+    "babili": "0.0.11",
     "codeceptjs": "^0.5.0",
     "selenium-standalone": "^6.0.1",
     "serve": "^3.4.0",
