@@ -5,7 +5,7 @@ cache:
 node_js:
   - "7"
 before_script:
-  - npm run forever
+  - npm run serve
   - npm run build
 script:
   - xvfb-run node_modules/codeceptjs/bin/codecept.js run --steps
