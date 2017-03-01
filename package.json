@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "xvfb-run codeceptjs run --steps",
+    "test": "codeceptjs run --steps",
     "selenium": "selenium-standalone install && selenium-standalone start",
     "forever": "forever start node_modules/serve/bin/serve.js",
     "start": "serve",
