@@ -5,5 +5,5 @@ cache:
 node_js:
   - "7"
 before_script:
-  - npm start &
+  - npm run forever
   - npm run build
