@@ -5,6 +5,5 @@ cache:
 node_js:
   - "7"
 before_script:
-  - npm run selenium &
   - npm start &
   - npm run build
