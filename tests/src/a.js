@@ -1,3 +1,5 @@
 const b = require('./b');
-const string = `a${b}`;
-module.exports = string;
+const _template = require('lodash/template');
+const template = _template('a<%- b %>');
+
+module.exports = template({b: b});

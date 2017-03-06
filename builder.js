@@ -54,8 +54,6 @@ function transformFileSync(srcFileName, outFileName) {
 }
 
 function trace(fileName) {
-    const fileContent = fs.readFileSync(fileName, 'utf8');
-    const fileDeps = detective(fileContent);
     let fileUrl = fileName;
 
     if (fileUrl.indexOf('node_modules/') >= 0) {
@@ -67,6 +65,9 @@ function trace(fileName) {
     if (tree[fileUrl]) {
         return;
     }
+
+    const fileContent = fs.readFileSync(fileUrl, 'utf8');
+    const fileDeps = detective(fileContent);
 
     tree[fileUrl] = {};
 
