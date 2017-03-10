@@ -108,7 +108,7 @@
     }
 
     global.amd = {
-        load: loadModule,
+        import: loadModule,
         config: configure
     };
 

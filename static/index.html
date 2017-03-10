@@ -7,7 +7,7 @@
 </head>
 <body>
   <script>
-      amd.load('build/tests/mocks/a.js').then(a => {
+      amd.import('build/tests/mocks/a.js').then(a => {
           document.body.innerHTML = a
       });
   </script>
