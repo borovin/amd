@@ -9,7 +9,8 @@ const config = _.merge({
     srcFiles: 'src/**/*.js',
     outDir: 'build',
     staticDir: '.',
-    babel: {}
+    babel: {},
+    baseUrl: '/'
 }, require(`${cwd}/amd.config.js`));
 
 const outDir = path.resolve(config.outDir);
@@ -28,7 +29,7 @@ function builder() {
     console.log(`-> ${amdFilePath}`);
 
     fs.appendFileSync(amdFilePath, fs.readFileSync(amdLoaderFilePath, 'utf8'));
-    fs.appendFileSync(amdFilePath, `amd.config({"tree": ${JSON.stringify(amdTree)}});`);
+    fs.appendFileSync(amdFilePath, `amd.config({"baseUrl": "${config.baseUrl}", "tree": ${JSON.stringify(amdTree)}});`);
 }
 
 function transformFileSync(srcFilePath, outFilePath) {

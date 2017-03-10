@@ -1,9 +1,7 @@
 (function(global) {
     const modules = [];
     const registry = {};
-    const config = {
-        baseUrl: '/'
-    };
+    const config = {};
     const __module = {exports: {}};
 
     function define(name, dependencies, definition) {
