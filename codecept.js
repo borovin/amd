@@ -5,7 +5,7 @@ module.exports.config = {
     "helpers": {
         "Nightmare": {
             "url": "http://localhost:3000",
-            "show": true
+            "show": false
         }
     },
     "include": {},

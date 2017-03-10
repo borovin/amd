@@ -1,4 +1,5 @@
 module.exports = {
-    srcDir: 'tests/src',
-    outDir: 'tests/build'
+    srcFiles: 'tests/mocks/**/*.js',
+    outDir: 'static/build',
+    staticDir: 'static'
 };

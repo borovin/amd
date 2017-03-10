@@ -6,40 +6,33 @@ const detective = require('detective-amd');
 const path = require('path');
 const _ = require('lodash');
 const config = _.merge({
-    srcDir: 'src',
-    srcFiles: '**/*.js',
+    srcFiles: 'src/**/*.js',
     outDir: 'build',
     staticDir: '.',
     babel: {}
 }, require(`${cwd}/amd.config.js`));
 
-const amdConfigFile = `${config.outDir}/amd.tree.js`;
-const tree = {};
-
+const outDir = path.resolve(config.outDir);
+const staticDir = path.resolve(config.staticDir);
+const srcFiles = globule.find(config.srcFiles);
+const amdLoaderFilePath = path.resolve(__dirname, 'loader.min.js');
+const amdFilePath = path.resolve(config.outDir, 'amd.js');
+const amdTree = {};
 const amdRegEx = /(?:^\s*|[}{\(\);,\n\?\&]\s*)define\s*\(\s*("[^"]+"\s*,\s*|'[^']+'\s*,\s*)?\s*(\[(\s*(("[^"]+"|'[^']+')\s*,|\/\/.*\n|\/\*(.|\s)*?\*\/))*(\s*("[^"]+"|'[^']+')\s*,?\s*)?(\s*(\/\/.*\n|\/\*(.|\s)*?\*\/)\s*)*\]|function\s*|{|[_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*\))/;
 
-const srcFiles = globule.find(`${config.srcDir}/${config.srcFiles}`);
+function builder() {
+    srcFiles && srcFiles.forEach(trace);
 
-srcFiles && srcFiles.forEach(srcFileName => {
-    const outFileName = srcFileName.replace(config.srcDir, config.outDir);
-    transformFileSync(srcFileName, outFileName);
-});
+    fs.outputFileSync(amdFilePath, `//this file was generated automatically, do not edit it manually\n`);
 
-const outFiles = globule.find(`${config.outDir}/**/*.js`);
+    console.log(`-> ${amdFilePath}`);
 
-outFiles && outFiles.forEach(outFileName => {
-    trace(outFileName);
-});
+    fs.appendFileSync(amdFilePath, fs.readFileSync(amdLoaderFilePath, 'utf8'));
+    fs.appendFileSync(amdFilePath, `amd.config({"tree": ${JSON.stringify(amdTree)}});`);
+}
 
-fs.outputFileSync(amdConfigFile, `//this file generated automatically 
-//do not edit it manually
-
-amd.config({"tree": ${JSON.stringify(tree)}});`);
-
-console.log(`-> ${amdConfigFile}`);
-
-function transformFileSync(srcFileName, outFileName) {
-    const srcFileContent = fs.readFileSync(srcFileName, 'utf8');
+function transformFileSync(srcFilePath, outFilePath) {
+    const srcFileContent = fs.readFileSync(srcFilePath, 'utf8');
     const babelConfig = _.merge({plugins: []}, config.babel);
 
     if (!amdRegEx.test(srcFileContent)) {
@@ -48,28 +41,28 @@ function transformFileSync(srcFileName, outFileName) {
 
     const result = babel.transform(srcFileContent, babelConfig);
 
-    fs.outputFileSync(outFileName, result.code, 'utf8');
+    fs.outputFileSync(outFilePath, result.code, 'utf8');
 
-    console.log(`${srcFileName} -> ${outFileName}`);
+    console.log(`${srcFilePath} -> ${outFilePath}`);
 }
 
-function trace(fileName) {
-    let fileUrl = fileName;
+function trace(absFilePath) {
+    const cwdFilePath = path.relative(cwd, absFilePath);
+    const absOutFilePath = path.resolve(config.outDir, cwdFilePath);
+    const staticDirFilePath = path.relative(staticDir, absOutFilePath);
 
-    if (fileUrl.indexOf('node_modules/') >= 0) {
-        fileUrl = fileName.replace('node_modules', `${config.outDir}/browser_modules`);
-    }
+    console.log(`tracing ${cwdFilePath}...`);
 
-    fileUrl = _.trimStart(fileUrl, `${config.staticDir}/`);
-
-    if (tree[fileUrl]) {
+    if (amdTree[staticDirFilePath]) {
         return;
     }
 
-    const fileContent = fs.readFileSync(fileUrl, 'utf8');
+    transformFileSync(absFilePath, absOutFilePath);
+
+    const fileContent = fs.readFileSync(absOutFilePath, 'utf8');
     const fileDeps = detective(fileContent);
 
-    tree[fileUrl] = {};
+    amdTree[staticDirFilePath] = {};
 
     fileDeps.forEach(depId => {
         if (depId === 'module' || depId === 'exports') {
@@ -77,22 +70,18 @@ function trace(fileName) {
         }
 
         let depPath = depId;
-        let depUrl;
 
-        if (depId.indexOf('.') === 0) {
-            depPath = path.resolve(path.dirname(fileName), depId);
+        if (depPath.indexOf('.') === 0) {
+            depPath = path.resolve(path.dirname(cwdFilePath), depPath);
         }
 
-        depUrl = depPath = require.resolve(depPath).replace(`${cwd}/`, '');
+        const absDepPath = require.resolve(depPath);
+        const absDepOutPath = absDepPath.replace(cwd, outDir);
 
-        if (depPath.indexOf('node_modules/') >= 0) {
-            depUrl = depPath.replace('node_modules', `${config.outDir}/browser_modules`);
-            transformFileSync(depPath, depUrl);
-        }
+        amdTree[staticDirFilePath][depId] = path.relative(staticDir, absDepOutPath);
 
-        tree[fileUrl][depId] = _.trimStart(depUrl, `${config.staticDir}/`);
-
-        trace(depPath);
+        trace(absDepPath);
     });
 }
 
+module.exports = builder;

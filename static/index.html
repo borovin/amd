@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
-  <script src="/loader.js"></script>
-  <script src="/tests/build/amd.tree.js"></script>
+  <script src="/build/amd.js"></script>
 </head>
 <body>
   <script>
-      amd.load('tests/build/a.js').then(a => {
+      amd.load('build/tests/mocks/a.js').then(a => {
           document.body.innerHTML = a
       });
   </script>

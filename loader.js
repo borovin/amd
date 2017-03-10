@@ -114,4 +114,4 @@
 
     global.define = define;
     global.define.amd = {};
-})(this);
+})(window);
