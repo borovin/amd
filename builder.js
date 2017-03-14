@@ -4,6 +4,7 @@ const globule = require('globule');
 const cwd = process.cwd();
 const detective = require('detective-amd');
 const path = require('path');
+const resolveCwd = require('resolve-cwd');
 const _ = require('lodash');
 const config = _.merge({
     srcFiles: 'src/**/*.js',
@@ -76,7 +77,7 @@ function trace(absFilePath) {
             depPath = path.resolve(path.dirname(cwdFilePath), depPath);
         }
 
-        const absDepPath = require.resolve(depPath);
+        const absDepPath = resolveCwd(depPath);
         const absDepOutPath = absDepPath.replace(cwd, outDir);
 
         amdTree[staticDirFilePath][depId] = path.relative(staticDir, absDepOutPath);
