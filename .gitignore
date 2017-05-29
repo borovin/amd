@@ -1,4 +1,5 @@
 .idea
 output
 node_modules
-static/build
+build
+loader.min.js

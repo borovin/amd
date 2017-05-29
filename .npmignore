@@ -1,5 +1,3 @@
 tests
-amd.config.js
-codecept.js
-tools
-static
+build
+index.html

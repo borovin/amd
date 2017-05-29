@@ -1,19 +1,18 @@
 {
-  "name": "@basket/amd",
+  "name": "@basket/multipack",
   "version": "2.1.1",
-  "description": "minimal AMD loader for browsers",
+  "description": "Load unbundled browser scripts dynamically using http2 multiplexing",
   "main": "loader.js",
   "directories": {
     "test": "tests"
   },
   "bin": {
-    "amd": "./bin/amd.js"
+    "multipack": "./bin/cli.js"
   },
   "scripts": {
-    "test": "codeceptjs run --steps",
-    "start": "serve static",
+    "start": "serve",
     "build": "npm run build:loader && npm run build:static",
-    "build:static": "node ./tools/build.js",
+    "build:static": "./bin/cli.js build",
     "build:loader": "babel loader.js -o loader.min.js"
   },
   "author": "a@borovin.com",
@@ -25,6 +24,7 @@
     "codeceptjs": "^0.5.0",
     "nightmare": "^2.10.0",
     "nightmare-upload": "^0.1.1",
+    "rollup": "^0.41.6",
     "serve": "^3.4.0"
   },
   "dependencies": {
@@ -34,7 +34,6 @@
     "detective-amd": "^2.4.0",
     "fs-extra": "^2.0.0",
     "globule": "^1.1.0",
-    "lodash": "^4.17.4",
-    "resolve-cwd": "^1.0.0"
+    "lodash": "^4.17.4"
   }
 }
