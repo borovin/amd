@@ -1,3 +1,3 @@
-const c = require('./c');
+const c = require('./c')
 
-module.exports = `b${c}`;
+module.exports = `b${c}`

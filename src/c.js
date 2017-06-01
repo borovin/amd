@@ -1,1 +1,1 @@
-module.exports = `c`;
+define(() => 'c')

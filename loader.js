@@ -69,7 +69,7 @@
       scriptElement.src = config.baseUrl + url
       scriptElement.async = true
       scriptElement.onload = scriptElement.onreadystatechange = function () {
-        if (!ready && (!this.readyState || this.readyState == 'complete')) {
+        if (!ready && (!this.readyState || this.readyState === 'complete')) {
           ready = true
           resolve(modules.pop())
         }
