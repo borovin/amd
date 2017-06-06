@@ -5,6 +5,7 @@ const cwd = process.cwd()
 const detective = require('detective-amd')
 const path = require('path')
 const _ = require('lodash')
+const minimatch = require('minimatch')
 
 const defaultConfig = _.merge({
   srcDir: 'src',
@@ -14,7 +15,8 @@ const defaultConfig = _.merge({
     extends: path.resolve(cwd, '.babelrc')
   },
   baseUrl: '/build',
-  main: 'index.js'
+  main: 'index.js',
+  transformations: {}
 }, fs.existsSync('multipack.config.js') ? require(`${cwd}/multipack.config.js`) : {})
 
 const loaderFilePath = path.resolve(__dirname, 'loader.min.js')
@@ -39,6 +41,10 @@ class Multipack {
 
   get multipackFilePath () {
     return path.resolve(this.config.outDir, 'multipack.js')
+  }
+
+  get transformations () {
+    return this.config.transformations
   }
 
   build () {
@@ -91,12 +97,18 @@ class Multipack {
   }
 
   _transformFile (absFilePath) {
-    const fileContent = fs.readFileSync(absFilePath, 'utf8')
     const babelOptions = _.merge({
       plugins: []
     }, this.config.babel)
 
     const absOutFilePath = this._getAbsOutFilePath(absFilePath)
+
+    const fileContent = _.reduce(this.transformations, (result, transform, pattern) => {
+      if (minimatch(absFilePath.replace(this.srcDir, ''), pattern)) {
+        result = transform(result)
+      }
+      return result
+    }, fs.readFileSync(absFilePath, 'utf8'))
 
     if (fileContent.indexOf('define(') === -1) {
       babelOptions.plugins.push('transform-es2015-modules-amd')
@@ -112,7 +124,13 @@ class Multipack {
   }
 
   _getAbsOutFilePath (absSrcFilePath) {
-    return absSrcFilePath.indexOf(this.srcDir) === 0 ? absSrcFilePath.replace(this.srcDir, this.outDir) : absSrcFilePath.replace(cwd, this.outDir)
+    let absOutFilePath = absSrcFilePath.indexOf(this.srcDir) === 0 ? absSrcFilePath.replace(this.srcDir, this.outDir) : absSrcFilePath.replace(cwd, this.outDir)
+
+    if (!minimatch(absOutFilePath, '**/*.js')) {
+      absOutFilePath += '.js'
+    }
+
+    return absOutFilePath
   }
 
   _shouldFileTransform (absFilePath) {

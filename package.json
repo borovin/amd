@@ -36,11 +36,13 @@
     "detective-amd": "^2.4.0",
     "fs-extra": "^2.0.0",
     "globby": "^6.1.0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "minimatch": "^3.0.4"
   },
   "standard": {
     "globals": [
       "define"
     ]
-  }
+  },
+  "false": {}
 }
