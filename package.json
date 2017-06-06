@@ -12,9 +12,8 @@
   "scripts": {
     "precommit": "npm run test:codestyle",
     "start": "serve",
-    "build": "npm run build:loader && npm run build:static",
-    "build:static": "./bin/cli.js build",
-    "build:loader": "babel loader.js -o loader.min.js",
+    "multipack": "./bin/cli.js",
+    "build": "babel loader.js -o loader.min.js",
     "test:codestyle": "standard",
     "fix": "standard --fix"
   },
@@ -32,6 +31,7 @@
   "dependencies": {
     "babel-core": "^6.23.1",
     "babel-plugin-transform-es2015-modules-amd": "^6.22.0",
+    "chokidar": "^1.7.0",
     "commander": "^2.9.0",
     "detective-amd": "^2.4.0",
     "fs-extra": "^2.0.0",

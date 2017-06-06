@@ -7,6 +7,8 @@ function transformHtml (content) {
 }
 
 module.exports = {
+  srcDir: '__src__',
+  srcFiles: ['**/*.js', '**/*.html'],
   transformations: {
     '**/*.html': transformHtml
   }

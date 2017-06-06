@@ -6,6 +6,7 @@ const detective = require('detective-amd')
 const path = require('path')
 const _ = require('lodash')
 const minimatch = require('minimatch')
+const chokidar = require('chokidar')
 
 const defaultConfig = _.merge({
   srcDir: 'src',
@@ -24,7 +25,7 @@ const loaderFilePath = path.resolve(__dirname, 'loader.min.js')
 class Multipack {
   constructor (config) {
     this.config = _.merge({}, defaultConfig, config)
-    this._depTree = {}
+    this._tree = {}
   }
 
   get outDir () {
@@ -39,17 +40,36 @@ class Multipack {
     return globby.sync(this.config.srcFiles, {cwd: this.srcDir, absolute: true})
   }
 
-  get multipackFilePath () {
+  get _multipackFilePath () {
     return path.resolve(this.config.outDir, 'multipack.js')
-  }
-
-  get transformations () {
-    return this.config.transformations
   }
 
   build () {
     this.srcFiles.forEach(absFilePath => this.buildFile(absFilePath))
     this._writeMultipackFile()
+  }
+
+  watch () {
+    this.build()
+
+    const srcWatcher = chokidar.watch(this.config.srcFiles, {
+      cwd: this.config.srcDir,
+      ignoreInitial: true
+    })
+
+    srcWatcher
+      .on('change', srcFile => {
+        console.log(`Changes detected in ${srcFile}`)
+        this.buildFile(path.resolve(this.srcDir, srcFile))
+        this._writeMultipackFile()
+      })
+      .on('add', srcFile => {
+        console.log(`New source file: ${srcFile}`)
+        this.buildFile(path.resolve(this.srcDir, srcFile))
+        this._writeMultipackFile()
+      })
+
+    console.log('Waiting for changes in source files...')
   }
 
   buildFile (absFilePath) {
@@ -83,17 +103,17 @@ class Multipack {
       this.buildFile(absDepPath)
     })
 
-    this._depTree[outFilePath] = depTree
+    this._tree[outFilePath] = depTree
   }
 
   _writeMultipackFile () {
-    fs.outputFileSync(this.multipackFilePath, `//this file was generated automatically, do not edit it manually\n`)
-    fs.appendFileSync(this.multipackFilePath, fs.readFileSync(loaderFilePath, 'utf8'))
-    fs.appendFileSync(this.multipackFilePath, `multipack.config({"baseUrl": "${this.config.baseUrl}", "tree": ${JSON.stringify(this._depTree)}});`)
+    fs.outputFileSync(this._multipackFilePath, `//this file was generated automatically, do not edit it manually\n`)
+    fs.appendFileSync(this._multipackFilePath, fs.readFileSync(loaderFilePath, 'utf8'))
+    fs.appendFileSync(this._multipackFilePath, `multipack.config({"baseUrl": "${this.config.baseUrl}", "tree": ${JSON.stringify(this._tree)}});`)
 
-    this.config.main && fs.appendFileSync(this.multipackFilePath, `multipack.import('/${this.config.main}')`)
+    this.config.main && fs.appendFileSync(this._multipackFilePath, `multipack.import('/${this.config.main}')`)
 
-    console.log(`Your multipack is ready: ${this.multipackFilePath.replace(cwd, '')}`)
+    console.log(`multipack is ready: ${this._multipackFilePath.replace(cwd, '')}`)
   }
 
   _transformFile (absFilePath) {
@@ -103,10 +123,15 @@ class Multipack {
 
     const absOutFilePath = this._getAbsOutFilePath(absFilePath)
 
-    const fileContent = _.reduce(this.transformations, (result, transform, pattern) => {
-      if (minimatch(absFilePath.replace(this.srcDir, ''), pattern)) {
-        result = transform(result)
+    const fileContent = _.reduce(this.config.transformations, (result, transform, pattern) => {
+      if (!minimatch(absFilePath.replace(this.srcDir, ''), pattern)) {
+        return result
       }
+
+      if (typeof transform === 'function') {
+        return transform(result)
+      }
+
       return result
     }, fs.readFileSync(absFilePath, 'utf8'))
 
@@ -124,13 +149,7 @@ class Multipack {
   }
 
   _getAbsOutFilePath (absSrcFilePath) {
-    let absOutFilePath = absSrcFilePath.indexOf(this.srcDir) === 0 ? absSrcFilePath.replace(this.srcDir, this.outDir) : absSrcFilePath.replace(cwd, this.outDir)
-
-    if (!minimatch(absOutFilePath, '**/*.js')) {
-      absOutFilePath += '.js'
-    }
-
-    return absOutFilePath
+    return absSrcFilePath.indexOf(this.srcDir) === 0 ? absSrcFilePath.replace(this.srcDir, this.outDir) : absSrcFilePath.replace(cwd, this.outDir)
   }
 
   _shouldFileTransform (absFilePath) {
