@@ -13,6 +13,8 @@
     "precommit": "npm run test:codestyle",
     "start": "serve",
     "multipack": "./bin/cli.js",
+    "multipack:build": "./bin/cli.js build",
+    "multipack:watch": "./bin/cli.js watch",
     "build": "babel loader.js -o loader.min.js",
     "test:codestyle": "standard",
     "fix": "standard --fix"
@@ -37,7 +39,8 @@
     "fs-extra": "^2.0.0",
     "globby": "^6.1.0",
     "lodash": "^4.17.4",
-    "minimatch": "^3.0.4"
+    "minimatch": "^3.0.4",
+    "resolve-from": "^3.0.0"
   },
   "standard": {
     "globals": [

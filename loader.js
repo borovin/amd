@@ -4,6 +4,10 @@
   const config = {}
   const __module = {exports: {}}
 
+  function isExternalUrl(url) {
+    return (url.indexOf('http') === 0) || (url.indexOf('//') === 0)
+  }
+
   function define (name, dependencies, definition) {
     if (typeof name !== 'string') {
       definition = dependencies
@@ -66,7 +70,7 @@
       const scriptElement = document.createElement('script')
 
       scriptElement.type = 'text/javascript'
-      scriptElement.src = config.baseUrl + url
+      scriptElement.src = isExternalUrl(url) ? url : config.baseUrl + url
       scriptElement.async = true
       scriptElement.onload = scriptElement.onreadystatechange = function () {
         if (!ready && (!this.readyState || this.readyState === 'complete')) {

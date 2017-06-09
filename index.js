@@ -7,6 +7,7 @@ const path = require('path')
 const _ = require('lodash')
 const minimatch = require('minimatch')
 const chokidar = require('chokidar')
+const resolveFrom = require('resolve-from');
 
 const defaultConfig = _.merge({
   srcDir: 'src',
@@ -21,6 +22,10 @@ const defaultConfig = _.merge({
 }, fs.existsSync('multipack.config.js') ? require(`${cwd}/multipack.config.js`) : {})
 
 const loaderFilePath = path.resolve(__dirname, 'loader.min.js')
+
+function isExternalUrl(url) {
+  return (url.indexOf('http') === 0) || (url.indexOf('//') === 0)
+}
 
 class Multipack {
   constructor (config) {
@@ -72,7 +77,17 @@ class Multipack {
     console.log('Waiting for changes in source files...')
   }
 
-  buildFile (absFilePath) {
+  buildFile (filePath) {
+    let absFilePath = filePath
+
+    if (isExternalUrl(absFilePath)){
+      return
+    }
+
+    if (absFilePath.indexOf(cwd) < 0){
+      absFilePath = path.join(this.srcDir, absFilePath)
+    }
+
     const absOutFilePath = this._getAbsOutFilePath(absFilePath)
     const outFilePath = absOutFilePath.replace(this.outDir, '')
 
@@ -89,13 +104,7 @@ class Multipack {
         return
       }
 
-      let depPath = depId
-
-      if (depPath.indexOf('.') === 0) {
-        depPath = path.resolve(path.dirname(absFilePath), depPath)
-      }
-
-      const absDepPath = require.resolve(depPath)
+      const absDepPath = this._resolveDependencyPath(absFilePath, depId) || depId
       const absDepOutPath = this._getAbsOutFilePath(absDepPath)
 
       depTree[depId] = absDepOutPath.replace(this.outDir, '')
@@ -163,6 +172,18 @@ class Multipack {
     const outFileMtime = new Date(fs.statSync(absOutFilePath).mtime).getTime()
 
     return srcFileMtime > outFileMtime
+  }
+
+  _resolveDependencyPath(absRootPath, depId) {
+    if (isExternalUrl(depId)){
+      return depId
+    }
+
+    if (depId.indexOf('/') === 0){
+      return resolveFrom.silent(this.srcDir, `.${depId}`)
+    }
+
+    return resolveFrom.silent(path.dirname(absRootPath), depId)
   }
 }
 
