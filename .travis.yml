@@ -15,5 +15,6 @@ before_script:
   - npm start &
   - sleep 3
 script:
+  - npm run build
   - npm run multipack:build
   - npm test
