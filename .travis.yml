@@ -1,0 +1,19 @@
+language: node_js
+cache:
+  directories:
+    - node_modules
+notifications:
+  email: false
+node_js:
+  - "stable"
+install:
+  - export DISPLAY=':99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  - npm install
+  - npm prune
+before_script:
+  - npm start &
+  - sleep 3
+script:
+  - npm run multipack:build
+  - npm test

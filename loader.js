@@ -4,7 +4,7 @@
   const config = {}
   const __module = {exports: {}}
 
-  function isExternalUrl(url) {
+  function isExternalUrl (url) {
     return (url.indexOf('http') === 0) || (url.indexOf('//') === 0)
   }
 

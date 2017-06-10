@@ -11,7 +11,8 @@
   },
   "scripts": {
     "precommit": "npm run test:codestyle",
-    "start": "serve",
+    "start": "serve -p 3000",
+    "test": "ava",
     "multipack": "./bin/cli.js",
     "multipack:build": "./bin/cli.js build",
     "multipack:watch": "./bin/cli.js watch",
@@ -22,10 +23,12 @@
   "author": "a@borovin.com",
   "license": "MIT",
   "devDependencies": {
+    "ava": "^0.19.1",
     "babel-cli": "^6.23.0",
     "babel-preset-babili": "0.0.12",
     "babel-preset-es2015": "^6.22.0",
     "husky": "^0.13.4",
+    "nightmare": "^2.10.0",
     "rollup": "^0.41.6",
     "serve": "^3.4.0",
     "standard": "^10.0.2"

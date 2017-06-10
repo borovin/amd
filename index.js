@@ -7,7 +7,7 @@ const path = require('path')
 const _ = require('lodash')
 const minimatch = require('minimatch')
 const chokidar = require('chokidar')
-const resolveFrom = require('resolve-from');
+const resolveFrom = require('resolve-from')
 
 const defaultConfig = _.merge({
   srcDir: 'src',
@@ -23,7 +23,7 @@ const defaultConfig = _.merge({
 
 const loaderFilePath = path.resolve(__dirname, 'loader.min.js')
 
-function isExternalUrl(url) {
+function isExternalUrl (url) {
   return (url.indexOf('http') === 0) || (url.indexOf('//') === 0)
 }
 
@@ -80,11 +80,11 @@ class Multipack {
   buildFile (filePath) {
     let absFilePath = filePath
 
-    if (isExternalUrl(absFilePath)){
+    if (isExternalUrl(absFilePath)) {
       return
     }
 
-    if (absFilePath.indexOf(cwd) < 0){
+    if (absFilePath.indexOf(cwd) < 0) {
       absFilePath = path.join(this.srcDir, absFilePath)
     }
 
@@ -174,12 +174,12 @@ class Multipack {
     return srcFileMtime > outFileMtime
   }
 
-  _resolveDependencyPath(absRootPath, depId) {
-    if (isExternalUrl(depId)){
+  _resolveDependencyPath (absRootPath, depId) {
+    if (isExternalUrl(depId)) {
       return depId
     }
 
-    if (depId.indexOf('/') === 0){
+    if (depId.indexOf('/') === 0) {
       return resolveFrom.silent(this.srcDir, `.${depId}`)
     }
 
