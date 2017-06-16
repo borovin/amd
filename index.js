@@ -14,7 +14,7 @@ const defaultConfig = _.merge({
   srcFiles: '**/*.js',
   outDir: 'build',
   babel: {
-    extends: path.resolve(cwd, '.babelrc')
+    extends: fs.existsSync('.babelrc') ? '.babelrc' : null
   },
   baseUrl: '/build',
   main: 'index.js',
